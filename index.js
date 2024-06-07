@@ -119,7 +119,7 @@ async function joinRoom(socket, { userId }) {
                     });
             
             socket.join(room.id);
-            socket.to(room.id).emit('user_joined');
+            socket.to(room.id).emit('user_joined', userId);
         }
 
         socket.roomId = room.id;
