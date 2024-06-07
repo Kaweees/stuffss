@@ -87,8 +87,8 @@ io.on('connection', socket => {
     })
 })
 
-async function joinRoom(socket, { userId }) {
-    console.log(`${new Date()}: The user ${userId} is searching for a room...`);
+async function joinRoom(socket, data) {
+    console.log(`${new Date()}: The user ${data.userId} is searching for a room...`);
     if(socket.roomId) {
         await deleteRoom(socket.roomId);
     }
@@ -101,7 +101,7 @@ async function joinRoom(socket, { userId }) {
         if(snapshot.empty) {
             room = await db.collection('rooms')
                     .add({
-                        user1: userId,
+                        user1: data.userId,
                         user2: null
                     });
 
@@ -115,16 +115,18 @@ async function joinRoom(socket, { userId }) {
             await db.collection('rooms')
                     .doc(room.id)
                     .update({
-                        user2: userId
+                        user2: data.userId
                     });
+                    
+            socket.to(room.id).emit('user_joined', {userId: data.userId});
             
             socket.join(room.id);
-            socket.to(room.id).emit('user_joined', userId);
+            socket.to(room.id).emit('user_joined', data);
         }
 
         socket.roomId = room.id;
         
-        console.log(`${new Date()}: The user ${userId} joined the room [${room.id}]`);
+        console.log(`${new Date()}: The user ${data.userId} joined the room [${room.id}]`);
     })
 }
 
